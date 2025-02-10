@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Get the P4 root path using "p4 info"
+P4_ROOT=$(p4 info | awk -F': ' '/Client root/ {print $2}')
+ACTIVE_CL_FILE="$P4_ROOT/.active_cl"
+
+# Function to read the active CL number
+get_active_cl() {
+    if [[ -f "$ACTIVE_CL_FILE" && -s "$ACTIVE_CL_FILE" ]]; then
+        cat "$ACTIVE_CL_FILE"
+    else
+        echo ""
+    fi
+}
+
+# Step 1: Read the current active CL
+CL_NUMBER=$(get_active_cl)
+
+# Step 2: If no active CL, run "cla" to select one
+if [[ -z "$CL_NUMBER" ]]; then
+    echo "Active CL not selected. Running cla..."
+    cla
+
+    # Step 3: Re-check for active CL after running cla
+    CL_NUMBER=$(get_active_cl)
+    
+    # If still empty, exit
+    if [[ -z "$CL_NUMBER" ]]; then
+        echo "No active changelist selected. Aborting."
+        exit 1
+    fi
+fi
+
+# Step 4: Display detailed changelist information using p4 describe
+echo -e "\nChangelist #$CL_NUMBER description:"
+p4 describe -s "$CL_NUMBER" | sed -n '/^$/,$p' | tail -n +2  # Skip metadata, show only description
+

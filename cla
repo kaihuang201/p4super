@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Get the P4 root path using "p4 info"
+P4_ROOT=$(p4 info | awk -F': ' '/Client root/ {print $2}')
+ACTIVE_CL_FILE="$P4_ROOT/.active_cl"
+
+# Read the current active CL if the file exists
+if [[ -f "$ACTIVE_CL_FILE" && -s "$ACTIVE_CL_FILE" ]]; then
+    ACTIVE_CL=$(cat "$ACTIVE_CL_FILE")
+else
+    ACTIVE_CL=""
+fi
+
+# Run "cls" and pipe the output to "fzf" with active CL highlighted
+SELECTED_LINE=$(cls | fzf --height=90% --reverse --prompt="Select a changelist: " --query="$ACTIVE_CL")
+
+# Check if user made a selection
+if [[ -n "$SELECTED_LINE" ]]; then
+    echo "Selected: $SELECTED_LINE"
+    
+    # Extract the CL number (first field)
+    CL_NUMBER=$(echo "$SELECTED_LINE" | awk '{print $1}')
+    
+    # Write the CL number to the .active_cl file
+    echo "$CL_NUMBER" > "$ACTIVE_CL_FILE"
+    
+    echo "Active CL set to: $CL_NUMBER"
+else
+    echo "No changelist selected."
+fi
+

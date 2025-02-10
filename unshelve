@@ -1,0 +1,68 @@
+#!/bin/bash
+
+# Get the P4 root path using "p4 info"
+P4_ROOT=$(p4 info | awk -F': ' '/Client root/ {print $2}')
+ACTIVE_CL_FILE="$P4_ROOT/.active_cl"
+
+# Function to check if there are open files in the workspace
+check_no_open_files() {
+    OPEN_FILES=$(p4 opened)
+    if [[ -n "$OPEN_FILES" ]]; then
+        echo "There are open files in the workspace. Please resolve them before unshelving."
+        exit 1
+    fi
+}
+
+# Function to read the active CL number
+get_active_cl() {
+    if [[ -f "$ACTIVE_CL_FILE" && -s "$ACTIVE_CL_FILE" ]]; then
+        cat "$ACTIVE_CL_FILE"
+    else
+        echo ""
+    fi
+}
+
+# Step 1: Confirm workspace has no open files
+check_no_open_files
+
+# Step 2: Read the current active CL
+CL_NUMBER=$(get_active_cl)
+
+# Step 3: If no active CL, run "cla" to select one
+if [[ -z "$CL_NUMBER" ]]; then
+    echo "Active CL not selected. Running cla..."
+    cla
+
+    # Step 4: Re-check for active CL after running cla
+    CL_NUMBER=$(get_active_cl)
+    
+    # If still empty, exit
+    if [[ -z "$CL_NUMBER" ]]; then
+        echo "No active changelist selected. Aborting."
+        exit 1
+    fi
+fi
+
+# Step 5: Fetch the changelist description
+echo -e "\nChangelist #$CL_NUMBER description:"
+p4 describe -s "$CL_NUMBER" | sed -n '/^$/,$p' | tail -n +2  # Skip metadata, show only description
+
+# Step 6: Confirm with the user before unshelving
+echo -e "\nYou are about to unshelve changelist #$CL_NUMBER."
+read -p "Are you sure? (y/N): " CONFIRM
+
+if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then
+    echo "Unshelving changelist #$CL_NUMBER..."
+    p4 unshelve -s "$CL_NUMBER" -c "$CL_NUMBER"
+    echo "Changelist #$CL_NUMBER has been unshelved."
+
+    # Step 7: Perform p4 resolve to handle any conflicts
+    echo "Performing p4 resolve to handle conflicts..."
+    p4 resolve
+
+    echo "Resolution process complete."
+else
+    echo "Aborted unshelving."
+    exit 1
+fi
+
