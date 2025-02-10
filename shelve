@@ -32,17 +32,17 @@ if [[ -z "$CL_NUMBER" ]]; then
 fi
 
 # Fetch the changelist description
-echo -e "\nChangelist #$CL_NUMBER description:"
+echo -e "\nChangelist $CL_NUMBER description:"
 p4 describe -s "$CL_NUMBER" | sed -n '/^$/,$p' | tail -n +2  # Skip metadata, show only description
 
 # Confirm with the user before shelving
-echo -e "\nYou are about to shelve changelist #$CL_NUMBER."
+echo -e "\nYou are about to shelve changelist $CL_NUMBER."
 read -p "Are you sure? (y/N): " CONFIRM
 
 if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then
-    echo "Shelving changelist #$CL_NUMBER..."
+    echo "Shelving changelist $CL_NUMBER..."
     p4 shelve -r -c "$CL_NUMBER"
-    echo "Changelist #$CL_NUMBER has been shelved."
+    echo "Changelist $CL_NUMBER has been shelved."
 else
     echo "Aborted shelving."
     exit 1
