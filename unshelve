@@ -48,11 +48,11 @@ echo -e "\nChangelist $CL_NUMBER description:"
 p4 describe -s "$CL_NUMBER" | sed -n '/^$/,$p' | tail -n +2  # Skip metadata, show only description
 
 # Step 6: Confirm with the user before unshelving
-echo -e "\nYou are about to unshelve changelist $CL_NUMBER."
+echo -e "\nYou are about to unshelve changelist $CL_NUMBER"
 read -p "Are you sure? (y/N): " CONFIRM
 
 if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then
-    echo "Unshelving changelist $CL_NUMBER..."
+    echo "Unshelving changelist $CL_NUMBER ..."
     p4 unshelve -s "$CL_NUMBER" -c "$CL_NUMBER"
     echo "Changelist $CL_NUMBER has been unshelved."
 
