@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Get the P4 Client root path using "p4 info"
+P4_ROOT=$(p4 info | awk -F': ' '/Client root/ {print $2}')
+ACTIVE_CL_FILE="$P4_ROOT/.active_cl"
+
+# Function to read the active CL number
+get_active_cl() {
+    if [[ -f "$ACTIVE_CL_FILE" && -s "$ACTIVE_CL_FILE" ]]; then
+        cat "$ACTIVE_CL_FILE"
+    else
+        echo ""
+    fi
+}
+
+# Step 1: Read the active changelist number
+CL_NUMBER=$(get_active_cl)
+
+# Step 2: If no active CL, run "cla" to select one
+if [[ -z "$CL_NUMBER" ]]; then
+    echo "Active CL not selected. Running cla..."
+    cla
+
+    # Re-check for active CL after running cla
+    CL_NUMBER=$(get_active_cl)
+    
+    # If still empty, exit
+    if [[ -z "$CL_NUMBER" ]]; then
+        echo "No active changelist selected. Aborting."
+        exit 1
+    fi
+fi
+
+# Step 3: Check if filename is provided as argument
+FILENAME="$1"
+
+# Step 4: If no argument, use fzf to select a file from current directory
+if [[ -z "$FILENAME" ]]; then
+    FILENAME=$(ls -p | grep -v / | fzf --height 90% --prompt="Select a file to edit: ")
+    if [[ -z "$FILENAME" ]]; then
+        echo "No file selected. Exiting."
+        exit 1
+    fi
+fi
+
+# Step 5: Run p4 edit with the active changelist number and selected filename
+echo "Running: p4 edit -c  $CL_NUMBER  $FILENAME"
+p4 edit -c "$CL_NUMBER" "$FILENAME"
+p4 add -c "$CL_NUMBER" "$FILENAME"
