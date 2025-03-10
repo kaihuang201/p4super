@@ -42,10 +42,11 @@ if [[ -z "$p4opened" ]]; then
     exit 1
 fi
 
-added=$(echo "$p4opened" | grep -c "\<add\>")
-edited=$(echo "$p4opened" | grep -c "\<edit\>")
-deleted=$(echo "$p4opened" | grep -c "\<delete\>")
+added=$(echo "$p4opened" | grep -c "\<add change $CL_NUMBER\>")
+edited=$(echo "$p4opened" | grep -c "\<edit change $CL_NUMBER\>")
+deleted=$(echo "$p4opened" | grep -c "\<delete change $CL_NUMBER\>")
 total=$((added + edited + deleted))
+changes_other=$(($(echo "$p4opened" | wc -l) - total))
 
 echo "========================"
 echo "==== Local Changes: ===="
@@ -55,6 +56,10 @@ echo "$p4opened"
 # Confirm with the user before shelving
 echo -e "\nYou are about to shelve changelist $CL_NUMBER with"
 echo "$total Changes:  $added add, $edited edit, $deleted delete"
+if [[ "$changes_other" -ne 0 ]]; then 
+    echo "!! Warning: $changes_other changes NOT under active cl."
+fi
+
 read -p "Are you sure? (y/N): " CONFIRM
 
 if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then
