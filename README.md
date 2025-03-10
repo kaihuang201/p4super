@@ -8,5 +8,9 @@ All script should be added to PATH.
 - cla: Select a changelist interactively and set it as the active changelist.
 - cls: List all your changelists with their descriptions, and allow you to select one interactively.
 - clc: Display detailed information about the currently active changelist.
+- cledit:
+    - `cledit <file path>` to edit/add the file to active cl
+    - `cledit` to interactively select file to add to active cl under current directory.
+- change: Edit cl description of the active cl.
 - shelve: Shelve the currently active changelist or allow you to select one if no active changelist exists.
 - unshelve: Unshelve the currently active changelist or allow you to select one if no active changelist exists.
