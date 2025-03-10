@@ -35,8 +35,26 @@ fi
 echo -e "\nChangelist $CL_NUMBER description:"
 p4 describe -s "$CL_NUMBER" | sed -n '/^$/,$p' | tail -n +2  # Skip metadata, show only description
 
+# Check local opened files
+p4opened=$(p4 opened 2>/dev/null)
+if [[ -z "$p4opened" ]]; then
+    echo "!! NO OPEN FILES !!"
+    exit 1
+fi
+
+added=$(echo "$p4opened" | grep -c "\<add\>")
+edited=$(echo "$p4opened" | grep -c "\<edit\>")
+deleted=$(echo "$p4opened" | grep -c "\<delete\>")
+total=$((added + edited + deleted))
+
+echo "========================"
+echo "==== Local Changes: ===="
+echo "========================"
+echo "$p4opened"
+
 # Confirm with the user before shelving
-echo -e "\nYou are about to shelve changelist $CL_NUMBER"
+echo -e "\nYou are about to shelve changelist $CL_NUMBER with"
+echo "$total Changes:  $added add, $edited edit, $deleted delete"
 read -p "Are you sure? (y/N): " CONFIRM
 
 if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then

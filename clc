@@ -32,6 +32,6 @@ if [[ -z "$CL_NUMBER" ]]; then
 fi
 
 # Step 4: Display detailed changelist information using p4 describe
-echo -e "\nChangelist #$CL_NUMBER description:"
+echo -e "\nDescription for changelist $CL_NUMBER:"
 p4 describe -s "$CL_NUMBER" | sed -n '/^$/,$p' | tail -n +2  # Skip metadata, show only description
 
