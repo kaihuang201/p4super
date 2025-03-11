@@ -13,7 +13,7 @@ fi
 # Run "cls" to list changelists and pass output to fzf
 SELECTED_CL=$(cls | \
     fzf --height 90% --preview 'echo {} | cut -d" " -f1 | xargs -I % p4 describe -s %' \
-        --query="$ACTIVE_CL" --select-1 --exit-0 | awk '{print $1}')
+        --query="$ACTIVE_CL" --exit-0 | awk '{print $1}')
 
 # If a changelist was selected, run "p4 change <CL_NUMBER>"
 if [[ -n "$SELECTED_CL" ]]; then
