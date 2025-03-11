@@ -34,13 +34,13 @@ fi
 # Step 3: Check if filename is provided as argument
 FILENAME="$1"
 if [ -z "$FILENAME" ]; then
-    FILENAME="."
+    FILENAME="./"
 fi
 # Step 4: If FILENAME is not a file, use fzf to recursively select from current directory
 while [[ ! -f "$FILENAME" ]]; do
-    selection=$(ls "$FILENAME" 2>/dev/null | fzf --height 90% --prompt="Select path: ")
+    selection=$(ls -p "$FILENAME" 2>/dev/null | fzf --height 90% --prompt="Select path: ")
     [[ -z "$selection" ]] && echo "Nothing selected. Exiting." && exit 1
-    FILENAME="$FILENAME/$selection"
+    FILENAME="$FILENAME$selection"
 done
 
 # Step 5: Run p4 edit with the active changelist number and selected filename
